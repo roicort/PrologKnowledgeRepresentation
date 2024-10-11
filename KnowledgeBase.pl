@@ -16,13 +16,38 @@ class(_, _, _, _, _).
 % select: Sirve para eliminar un elemento de una lista.
 % exclude: Sirve para eliminar elementos de una lista que cumplan una condición.
 
+%% 0. Auxiliares
+
+subclass_of(Class, KnowledgeBase, Subclasses) :-
+    findall(Subclass, (member(class(Subclass, Class, _, _, _), KnowledgeBase)), DirectSubclasses),
+    findall(SubSubclass, (member(Subclass, DirectSubclasses), subclass_of(Subclass, KnowledgeBase, SubSubclass)), NestedSubclasses),
+    flatten([DirectSubclasses | NestedSubclasses], Subclasses).
+
 %% 1. Predicados para Consultar
 
 % A. Extensión de una clase
-% El conjunto de todos los objetos que pertenecen a la misma, ya sea  porque  se  declaren  directamente o por herencia.
+
+%La extensión de una clase (el conjunto de todos los objetos que pertenecen a la misma, ya 
+%sea  porque  se  declaren  directamente  o  porque  están  en  la  cerradura  de  la  relación  de 
+%herencia). Llevará por nombre: class_extension, y recibirá tres argumentos: (i) el nombre 
+%de la clase de la que se busca su extensión, (ii) la base de conocimientos en cuestión, y (iii) 
+%el resultado de la extensión en una lista.
+
+% Predicado para obtener la extensión de una clase
+class_extension(Class, KnowledgeBase, Extension) :-
+    subclass_of(Class, KnowledgeBase, Subclasses),
+    flatten([Class | Subclasses], AllClasses),
+    findall(Object, (member(ClassName, AllClasses), member(class(ClassName, _, _, _, Objects), KnowledgeBase), member([id=>Object, _, _], Objects)), Extension).
 
 % B. Extensión de una propiedad
 % El conjunto de todos los objetos que tienen una propiedad específica.
+
+%La  extensión  de  una  propiedad  (mostrar  todos  los  objetos  que  tienen  una  propiedad 
+%específica ya sea por declaración directa o por herencia, incluyendo su respectivo valor).  
+%Llevará  por  nombre:  property_extension,  y  recibirá  tres  argumentos:  (i)  el  nombre  de  la 
+%propiedad de la que se busca su extensión, (ii) la base de conocimientos en cuestión, y (iii) 
+%el resultado de la extensión en una lista. 
+%Con output: [Objeto, Valor]. Ej. Extension_Property = [pedro:yes, arturo:no].
 
 % C. Extensión de una relación
 % Mostrar todos los objetos que tienen una relación específica ya  sea  por  declaración  directa  o  por  herencia,  incluyendo  todos  los  objetos  con  quién están relacionados
@@ -39,7 +64,7 @@ main :-
         class(plantas, top, [], [], []),
         class(orquidae, plantas, [], [not(bailan), 0], []),
         class(rosas, plantas, [], [], [
-            [id=>rosa, [[color=>rojo, 0]], []]
+            [id=>rositafresita, [[color=>rojo, 0]], []]
         ]),
         class(aves, animales, [[vuelan, 0], [not(nadan), 0]], [], []),  
         class(peces, animales, [[nadan, 0], [not(bailan), 0]], [],
@@ -57,16 +82,24 @@ main :-
             ]),
         class(ornitorrincos, mamiferos, [[oviparos, 0]], [], [])
     ],
-    %class_extension(animales, KnowledgeBase, AnimalExtension),
-    %format('Extension de la clase animales: ~w~n', [AnimalExtension]),
-    %class_extension(plantas, KnowledgeBase, BirdExtension),
-    %format('Extension de la clase plantas: ~w~n', [BirdExtension]),
+
+    subclass_of(animales, KnowledgeBase, AnimalSubclasses),
+    format('Subclases de animales: ~w~n', [AnimalSubclasses]),
+    subclass_of(plantas, KnowledgeBase, PlantasSubclasses),
+    format('Subclases de plantas: ~w~n', [PlantasSubclasses]),
+
+    class_extension(animales, KnowledgeBase, AnimalExtension),
+    format('Extension de la clase animales: ~w~n', [AnimalExtension]),
+    class_extension(plantas, KnowledgeBase, BirdExtension),
+    format('Extension de la clase plantas: ~w~n', [BirdExtension]),
+
+    property_extension(nadan, KnowledgeBase, Extension),
+    format('Extension de la propiedad nadan: ~w~n', [Extension]),
+
     %classes_of_individual(pedro, KnowledgeBase, PedroClasses),
     %format('Clases de Pedro: ~w~n', [PedroClasses]),
     %classes_of_individual(arturo, KnowledgeBase, ArturoClasses),
     %format('Clases de Arturo: ~w~n', [ArturoClasses]),
-    %property_extension(vuelan, KnowledgeBase, Flyers),
-    %format('Extension de la propiedad vuelan: ~w~n', [Flyers]),
     %relation_extension(comen, KnowledgeBase, Comen),
     %format('Extension de la relación comen: ~w~n', [Comen]),
     halt.
