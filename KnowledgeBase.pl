@@ -60,7 +60,7 @@ class_extension(Class, KnowledgeBase, Extension) :-
     flatten([Class | Subclasses], AllClasses),
     findall(Object, (member(ClassName, AllClasses), member(class(ClassName, _, _, _, Objects), KnowledgeBase), member([id=>Object, _, _], Objects)), Extension).
 
-% B. Extensión de una propiedad
+% B. Extensión de una propiedad (NO FUNCIONA)
 
 %La  extensión  de  una  propiedad  (mostrar  todos  los  objetos  que  tienen  una  propiedad 
 %específica ya sea por declaración directa o por herencia, incluyendo su respectivo valor).  
@@ -75,7 +75,7 @@ property_extension(Property, KnowledgeBase, Extension) :-
     %Encontrar los objetos con la propiedad Property
     findall([Object, Value], (member(Class, ClassesWithProperty), member([id=>Object, Properties, _], KnowledgeBase), member(Property, Properties), member([Property=>Value, _], Properties)), Extension).
 
-% C. Extensión de una relación
+% C. Extensión de una relación (NO FUNCIONA)
 
 %La extensión de una relación (mostrar todos los objetos que tienen una relación específica 
 %ya  sea  por  declaración  directa  o  por  herencia,  incluyendo  todos  los  objetos  con  quién 
@@ -103,8 +103,10 @@ relation_extension(Relation, KnowledgeBase, Extension) :-
     %Classes: La lista resultante de todas las clases a las que pertenece Individual.
 
 classes_of_individual(Individual, KnowledgeBase, Classes) :-
-    findall(Class, (member(class(Class, _, _, _, Objects), KnowledgeBase), member([id=>Individual, _, _], Objects)), Classes).
-    % Encontrar clases padres de las clases a las que pertenece Individual de manera recursiva
+    findall(Class, (member(class(Class, _, _, _, Objects), KnowledgeBase), member([id=>Individual, _, _], Objects)), DirectClasses),
+    %Encontrar las clases padre de las clases a las que pertenece Individual
+    findall(ParentClass, (member(Class, DirectClasses), parentclasses_of(Class, KnowledgeBase, ParentClass)), ParentClasses),
+    flatten([DirectClasses | ParentClasses], Classes).
 
 %% Main
 
