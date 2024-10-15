@@ -18,9 +18,17 @@ class(_, _, _, _, _).
 
 %% 0. Auxiliares
 
-subclass_of(Class, KnowledgeBase, Subclasses) :-
+% A. Subclases de una clase
+% Encontrar todas las subclases de una clase.
+
+% Argumentos:
+    %Class: La clase de la cual queremos encontrar las subclases.
+    %KnowledgeBase: La base de conocimiento que contiene las definiciones de clases.
+    %Subclasses: La lista resultante de todas las subclases de Class.
+
+subclasses_of(Class, KnowledgeBase, Subclasses) :-
     findall(Subclass, (member(class(Subclass, Class, _, _, _), KnowledgeBase)), DirectSubclasses),
-    findall(SubSubclass, (member(Subclass, DirectSubclasses), subclass_of(Subclass, KnowledgeBase, SubSubclass)), NestedSubclasses),
+    findall(SubSubclass, (member(Subclass, DirectSubclasses), subclasses_of(Subclass, KnowledgeBase, SubSubclass)), NestedSubclasses),
     flatten([DirectSubclasses | NestedSubclasses], Subclasses).
 
 %% 1. Predicados para Consultar
@@ -35,12 +43,11 @@ subclass_of(Class, KnowledgeBase, Subclasses) :-
 
 % Predicado para obtener la extensión de una clase
 class_extension(Class, KnowledgeBase, Extension) :-
-    subclass_of(Class, KnowledgeBase, Subclasses),
+    subclasses_of(Class, KnowledgeBase, Subclasses),
     flatten([Class | Subclasses], AllClasses),
     findall(Object, (member(ClassName, AllClasses), member(class(ClassName, _, _, _, Objects), KnowledgeBase), member([id=>Object, _, _], Objects)), Extension).
 
 % B. Extensión de una propiedad
-% El conjunto de todos los objetos que tienen una propiedad específica.
 
 %La  extensión  de  una  propiedad  (mostrar  todos  los  objetos  que  tienen  una  propiedad 
 %específica ya sea por declaración directa o por herencia, incluyendo su respectivo valor).  
@@ -52,6 +59,13 @@ class_extension(Class, KnowledgeBase, Extension) :-
 % C. Extensión de una relación
 % Mostrar todos los objetos que tienen una relación específica ya  sea  por  declaración  directa  o  por  herencia,  incluyendo  todos  los  objetos  con  quién están relacionados
 
+% Argumentos:
+    %Relation: La relación de la que se busca su extensión.
+    %KnowledgeBase: La base de conocimiento que contiene las definiciones de clases.
+    %Extension: La lista resultante de la extensión de la relación Relation.
+
+relation_extension(Relation, KnowledgeBase, Extension) :-
+
 % D. Clases de un individuo
 % El conjunto de todas las clases a las que pertenece un objeto.
 
@@ -60,7 +74,9 @@ class_extension(Class, KnowledgeBase, Extension) :-
 main :-
     KnowledgeBase = [
         class(top, none, [], [], []),
-        class(animales, top, [], [], []),
+        class(animales, top, [], [], [
+            [id=>eslabonperdido, [], []]
+        ]),
         class(plantas, top, [], [], []),
         class(orquidae, plantas, [], [not(bailan), 0], []),
         class(rosas, plantas, [], [], [
@@ -80,12 +96,14 @@ main :-
             [
             [id=>arturo, [[listo, 0]], [[amigo=>pedro, 0]]]
             ]),
-        class(ornitorrincos, mamiferos, [[oviparos, 0]], [], [])
+        class(ornitorrincos, mamiferos, [[oviparos, 0]], [], [
+            [id=>perry, [[agente=>007, 0]], []]
+        ])
     ],
 
-    subclass_of(animales, KnowledgeBase, AnimalSubclasses),
+    subclasses_of(animales, KnowledgeBase, AnimalSubclasses),
     format('Subclases de animales: ~w~n', [AnimalSubclasses]),
-    subclass_of(plantas, KnowledgeBase, PlantasSubclasses),
+    subclasses_of(plantas, KnowledgeBase, PlantasSubclasses),
     format('Subclases de plantas: ~w~n', [PlantasSubclasses]),
 
     class_extension(animales, KnowledgeBase, AnimalExtension),
