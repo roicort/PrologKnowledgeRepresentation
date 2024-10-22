@@ -17,11 +17,7 @@ class(orchidaceae, plantas,
      []
      ),
 
-class(rosas, plantas, 
-     [], 
-     [], 
-     []
-     ),
+class(rosas, plantas, [], [], []),
 
 class(aves, animales, 
      [[vuelan,0],[not(nadan),0]], 
