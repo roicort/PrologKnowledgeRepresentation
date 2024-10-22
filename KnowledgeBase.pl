@@ -44,6 +44,16 @@ parentclasses_of(Subclass, KnowledgeBase, ParentClasses) :-
     findall(ParentParentClass, (member(ParentClass, DirectParentClasses), parentclasses_of(ParentClass, KnowledgeBase, ParentParentClass)), NestedParentClasses),
     flatten([DirectParentClasses | NestedParentClasses], ParentClasses).
 
+% C. Objetos de una clase
+
+% Argumentos:
+    %Class: La clase de la cual queremos encontrar los objetos.
+    %KnowledgeBase: La base de conocimiento que contiene las definiciones de clases.
+    %Objects: La lista resultante de todos los objetos de Class.
+
+objects_of_class(Class, KnowledgeBase, Objects) :-
+    findall(Object, (member(class(Class, _, _, _, Objects), KnowledgeBase), member([id=>Object, _, _], Objects)), Objects).
+
 %% 1. Predicados para Consultar
 
 % A. Extensión de una clase
@@ -58,7 +68,7 @@ parentclasses_of(Subclass, KnowledgeBase, ParentClasses) :-
 class_extension(Class, KnowledgeBase, Extension) :-
     subclasses_of(Class, KnowledgeBase, Subclasses),
     flatten([Class | Subclasses], AllClasses),
-    findall(Object, (member(ClassName, AllClasses), member(class(ClassName, _, _, _, Objects), KnowledgeBase), member([id=>Object, _, _], Objects)), Extension).
+    findall(Object, (member(ClassName, AllClasses), objects_of_class(ClassName, KnowledgeBase, ClassObjects), member(Object, ClassObjects)), Extension).
 
 % B. Extensión de una propiedad (NO FUNCIONA)
 
@@ -70,10 +80,11 @@ class_extension(Class, KnowledgeBase, Extension) :-
 %Con output: [Objeto, Valor]. Ej. Extension_Property = [pedro:yes, arturo:no].
 
 property_extension(Property, KnowledgeBase, Extension) :-
-    %Encontrar las extensiones (class_extension) de las clases con la propiedad Property
-    findall(Class, (member(class(Class, _, _, _, _), KnowledgeBase), class_extension(Class, KnowledgeBase, ClassExtension), member(Object, ClassExtension), member([id=>Object, Properties, _], KnowledgeBase), member(Property, Properties)), ClassesWithProperty),
-    %Encontrar los objetos con la propiedad Property
-    findall([Object, Value], (member(Class, ClassesWithProperty), member([id=>Object, Properties, _], KnowledgeBase), member(Property, Properties), member([Property=>Value, _], Properties)), Extension).
+    findall(Object-Value, (
+        member(class(_, _, _, _, Objects), KnowledgeBase),
+        member([id=>Object, Properties, _], Objects),
+        member(Property=>Value, Properties)
+    ), Extension).
 
 % C. Extensión de una relación (NO FUNCIONA)
 
@@ -89,10 +100,11 @@ property_extension(Property, KnowledgeBase, Extension) :-
     %Extension: La lista resultante de la extensión de la relación Relation.
 
 relation_extension(Relation, KnowledgeBase, Extension) :-
-    %Encontrar las extensiones (class_extension) de las clases con la relación Relation
-    findall(Class, (member(class(Class, _, _, _, _), KnowledgeBase), class_extension(Class, KnowledgeBase, ClassExtension), member(Object, ClassExtension), member([id=>Object, _, Relations], KnowledgeBase), member(Relation, Relations)), ClassesWithRelation),
-    %Encontrar los objetos con la relación Relation
-    findall([Object, RelatedObject], (member(Class, ClassesWithRelation), member([id=>Object, _, Relations], KnowledgeBase), member(Relation, Relations), member([Relation=>RelatedObject, _], Relations)), Extension).
+    findall(Object-Target, (
+        member(class(_, _, _, _, Objects), KnowledgeBase),
+        member([id=>Object, _, Relations], Objects),
+        member(Relation=>Target, Relations)
+    ), Extension).
 
 % D. Clases de un individuo
 % El conjunto de todas las clases a las que pertenece un objeto.
@@ -108,38 +120,28 @@ classes_of_individual(Individual, KnowledgeBase, Classes) :-
     findall(ParentClass, (member(Class, DirectClasses), parentclasses_of(Class, KnowledgeBase, ParentClass)), ParentClasses),
     flatten([DirectClasses | ParentClasses], Classes).
 
+%% 2. Predicados para añadir
+
+% A. Añadir una clase
+
+% Argumentos:
+    %ClassName: El nombre de la clase que se desea añadir.
+    %ParentClass: La clase padre de la clase que se desea añadir.
+    %PropertyList: La lista de propiedades de la clase que se desea añadir.
+    %RelationList: La lista de relaciones de la clase que se desea añadir.
+    %ObjectList: La lista de objetos de la clase que se desea añadir.
+    %KnowledgeBase: La base de conocimiento a la que se desea añadir la clase.
+
+
 %% Main
 
 main :-
-    KnowledgeBase = [
-        class(top, none, [], [], []),
-        class(animales, top, [], [], [
-            [id=>eslabonperdido, [], []]
-        ]),
-        class(plantas, top, [], [], []),
-        class(orchidaceae, plantas, [], [not(bailan), 0], []),
-        class(paphiopedilum, orchidaceae, [[color=>blanco, 0]], [], []),
-        class(rosas, plantas, [], [], [
-            [id=>rositafresita, [[color=>rojo, 0]], []]
-        ]),
-        class(aves, animales, [[vuelan, 0], [not(nadan), 0]], [], []),  
-        class(peces, animales, [[nadan, 0], [not(bailan), 0]], [],
-            [
-            [id=>nemo, [], []]
-            ]), 
-        class(mamiferos, animales, [[not(oviparos), 0]], [], []),
-        class(aguilas, aves, [], [[comen=>peces, 0]],
-            [
-            [id=>pedro, [[tam=>grande, 0]], [[not(amigo=>arturo), 0]]]
-            ]),
-        class(pinguino, aves, [[not(vuelan), 0], [nadan, 0]], [],
-            [
-            [id=>arturo, [[listo, 0]], [[amigo=>pedro, 0]]]
-            ]),
-        class(ornitorrincos, mamiferos, [[oviparos, 0]], [], [
-            [id=>perry, [[agente=>007, 0]], []]
-        ])
-    ],
+
+    % Cargar modulo I/O
+    consult('IO.pl'),
+
+    % Cargar base de conocimiento
+    open_kb('KB.txt', KnowledgeBase),
 
     subclasses_of(animales, KnowledgeBase, AnimalSubclasses),
     format('Subclases de animales: ~w~n', [AnimalSubclasses]),
