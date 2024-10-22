@@ -124,14 +124,31 @@ classes_of_individual(Individual, KnowledgeBase, Classes) :-
 
 % A. Añadir una clase
 
-% Argumentos:
-    %ClassName: El nombre de la clase que se desea añadir.
-    %ParentClass: La clase padre de la clase que se desea añadir.
-    %PropertyList: La lista de propiedades de la clase que se desea añadir.
-    %RelationList: La lista de relaciones de la clase que se desea añadir.
-    %ObjectList: La lista de objetos de la clase que se desea añadir.
-    %KnowledgeBase: La base de conocimiento a la que se desea añadir la clase.
+add_class(NewClass,Father,KnowledgeBase,NewKnowledgeBase) :-
+    member(class(Father,_,_,_,_),KnowledgeBase),
+    not(member(class(NewClass,_,_,_,_),KnowledgeBase)),
+    append(KnowledgeBase,[class(NewClass,Father,[],[],[])],NewKnowledgeBase).
 
+% B. Añadir un objeto
+
+add_object(Object, Class, KnowledgeBase, NewKnowledgeBase) :-
+    member(class(Class, _, _, _, Objects), KnowledgeBase),
+    not(member([id=>Object, _, _], Objects)),
+    select(class(Class, Father, Properties, Relations, Objects), KnowledgeBase, class(Class, Father, Properties, Relations, [[id=>Object, [], []] | Objects]), NewKnowledgeBase).
+
+%% 3. Predicados para eliminar
+
+% A. Eliminar una clase
+
+delete_class(Class, KnowledgeBase, NewKnowledgeBase) :-
+    exclude([class(Class, _, _, _, _)]>>true, KnowledgeBase, NewKnowledgeBase).
+
+% B. Eliminar un objeto
+
+delete_object(Object, Class, KnowledgeBase, NewKnowledgeBase) :-
+    member(class(Class, Father, Properties, Relations, Objects), KnowledgeBase),
+    select([id=>Object, _, _], Objects, NewObjects),
+    select(class(Class, Father, Properties, Relations, Objects), KnowledgeBase, class(Class, Father, Properties, Relations, NewObjects), NewKnowledgeBase).
 
 %% Main
 
@@ -139,38 +156,53 @@ main :-
 
     % Cargar modulo I/O
     consult('IO.pl'),
-
     % Cargar base de conocimiento
-    open_kb('KB.txt', KnowledgeBase),
+    open_kb('KB.txt', KnowledgeBase1),
 
-    subclasses_of(animales, KnowledgeBase, AnimalSubclasses),
+    subclasses_of(animales, KnowledgeBase1, AnimalSubclasses),
     format('Subclases de animales: ~w~n', [AnimalSubclasses]),
-    subclasses_of(plantas, KnowledgeBase, PlantasSubclasses),
+    subclasses_of(plantas, KnowledgeBase1, PlantasSubclasses),
     format('Subclases de plantas: ~w~n', [PlantasSubclasses]),
 
-    parentclasses_of(aves, KnowledgeBase, AvesParentClasses),
-    format('Clases padre de aves: ~w~n', [AvesParentClasses]),
-    parentclasses_of(paphiopedilum, KnowledgeBase, PaphiopedilumParentClasses),
-    format('Clases padre de paphiopedilum: ~w~n', [PaphiopedilumParentClasses]),
+    add_class(paphiopedilum, orchidaceae, KnowledgeBase1, Update1),
+    add_object(rositafresita, rosas, Update1, Update2),
+    save_kb('KB.txt', Update2),
+    format('Clase paphiopedilum añadida~n'),
 
-    class_extension(animales, KnowledgeBase, AnimalExtension),
+
+
+    open_kb('KB.txt', KnowledgeBase2),
+
+    subclasses_of(orchidaceae, KnowledgeBase2, OrchidaceaeSubclasses),
+    format('Subclases de orchidaceae: ~w~n', [OrchidaceaeSubclasses]),
+    
+    parentclasses_of(paphiopedilum, KnowledgeBase2, PaphiopedilumParentClasses),
+    format('Clases padre de paphiopedilum: ~w~n', [PaphiopedilumParentClasses]),
+    parentclasses_of(aves, KnowledgeBase2, AvesParentClasses),
+    format('Clases padre de aves: ~w~n', [AvesParentClasses]),
+
+    class_extension(animales, KnowledgeBase2, AnimalExtension),
     format('Extension de la clase animales: ~w~n', [AnimalExtension]),
-    class_extension(plantas, KnowledgeBase, BirdExtension),
+    class_extension(plantas, KnowledgeBase2, BirdExtension),
     format('Extension de la clase plantas: ~w~n', [BirdExtension]),
 
-    property_extension(nadan, KnowledgeBase, Extension),
+    property_extension(nadan, KnowledgeBase2, Extension),
     format('Extension de la propiedad nadan: ~w~n', [Extension]),
 
-    relation_extension(comen, KnowledgeBase, Comen),
+    relation_extension(comen, KnowledgeBase2, Comen),
     format('Extension de la relación comen: ~w~n', [Comen]),
 
-    classes_of_individual(pedro, KnowledgeBase, PedroClasses),
+    classes_of_individual(pedro, KnowledgeBase2, PedroClasses),
     format('Clases de Pedro: ~w~n', [PedroClasses]),
-    classes_of_individual(arturo, KnowledgeBase, ArturoClasses),
+    classes_of_individual(arturo, KnowledgeBase2, ArturoClasses),
     format('Clases de Arturo: ~w~n', [ArturoClasses]),
-    classes_of_individual(perry, KnowledgeBase, PerryClasses),
+    classes_of_individual(perry, KnowledgeBase2, PerryClasses),
     format('Clases de Perry: ~w~n', [PerryClasses]),
-    classes_of_individual(rositafresita, KnowledgeBase, RositaClasses),
+    classes_of_individual(rositafresita, KnowledgeBase2, RositaClasses),
     format('Clases de Rosita Fresita: ~w~n', [RositaClasses]),
+
+    delete_class(paphiopedilum, KnowledgeBase2, Update3),
+    delete_object(rositafresita, rosas, Update3, Update4),
+    save_kb('KB.txt', Update4),
 
     halt.
