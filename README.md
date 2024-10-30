@@ -1,5 +1,5 @@
 # Knowledge Representation in Prolog
----
+
 Author: Rodrigo S. Cortez Madrigal
 
 This project provides a Prolog-based knowledge base management system. It allows for the representation, querying, addition, modification, and deletion of classes, objects, properties, and relations within a hierarchical structure.
