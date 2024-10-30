@@ -80,7 +80,7 @@ class_extension(Class, KnowledgeBase, Extension) :-
 %Con output: [Objeto, Valor]. Ej. Extension_Property = [pedro:yes, arturo:no].
 
 property_extension(Property, KnowledgeBase, Extension) :-
-    findall(Object-Value, (
+    findall(Object:Value, (
         member(class(_, _, _, _, Objects), KnowledgeBase),
         member([id=>Object, Properties, _], Objects),
         member(Property=>Value, Properties)
@@ -100,7 +100,7 @@ property_extension(Property, KnowledgeBase, Extension) :-
     %Extension: La lista resultante de la extensión de la relación Relation.
 
 relation_extension(Relation, KnowledgeBase, Extension) :-
-    findall(Object-Target, (
+    findall(Object->Relation->Target, (
         member(class(_, _, _, _, Objects), KnowledgeBase),
         member([id=>Object, _, Relations], Objects),
         member(Relation=>Target, Relations)
@@ -390,8 +390,8 @@ main :-
     subclasses_of(orchidaceae, KnowledgeBase2, OrchidaceaeSubclasses),
     format('Subclases de orchidaceae: ~w~n', [OrchidaceaeSubclasses]),
     
-    parentclasses_of(paphiopedilum, KnowledgeBase2, PaphiopedilumParentClasses),
-    format('Clases padre de paphiopedilum: ~w~n', [PaphiopedilumParentClasses]),
+    parentclasses_of(paphiopedilumdelenatii, KnowledgeBase2, PaphiopedilumParentClasses),
+    format('Clases padre de paphiopedilumdelenatii: ~w~n', [PaphiopedilumParentClasses]),
     parentclasses_of(aves, KnowledgeBase2, AvesParentClasses),
     format('Clases padre de aves: ~w~n', [AvesParentClasses]),
 
