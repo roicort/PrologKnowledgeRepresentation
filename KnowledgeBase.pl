@@ -226,16 +226,11 @@ delete_class_property(Class, Property, KnowledgeBase, NewKnowledgeBase) :-
 % B2. Eliminar una propiedad de un objeto
 
 delete_object_property(Object, Class, Property, KnowledgeBase, NewKnowledgeBase) :-
-    % Encontrar la clase que contiene el objeto
-    member(class(Class, Father, ClassProperties, ClassRelations, Objects), KnowledgeBase),
-    % Encontrar el objeto dentro de la lista de objetos de la clase
+    member(class(Class, _, _, _, Objects), KnowledgeBase),
     member([id=>Object, ObjProperties, ObjRelations], Objects),
-    % Eliminar la propiedad del objeto
-    select(Property=>_, ObjProperties, UpdatedProperties),
-    % Actualizar la lista de objetos con las nuevas propiedades del objeto
-    select([id=>Object, ObjProperties, ObjRelations], Objects, [id=>Object, UpdatedProperties, ObjRelations], NewObjects),
-    % Actualizar la clase con la nueva lista de objetos
-    select(class(Class, Father, ClassProperties, ClassRelations, Objects), KnowledgeBase, class(Class, Father, ClassProperties, ClassRelations, NewObjects), NewKnowledgeBase).
+    select([Property=>_], ObjProperties, NewProperties),
+    select([id=>Object, ObjProperties, ObjRelations], Objects, [id=>Object, NewProperties, ObjRelations], NewObjects),
+    select(class(Class, Father, Properties, Relations, Objects), KnowledgeBase, class(Class, Father, Properties, Relations, NewObjects), NewKnowledgeBase).
 
 % C. Relaciones específicas de clases u objetos cuyo nombre será rm_class_relation y rm_object_relation. 
 
@@ -253,10 +248,16 @@ delete_class_relation(Class, Relation, KnowledgeBase, NewKnowledgeBase) :-
 % C2. Eliminar una relación de un objeto
 
 delete_object_relation(Object, Class, Relation, KnowledgeBase, NewKnowledgeBase) :-
-    member(class(Class, _, _, _, Objects), KnowledgeBase),
-    member([id=>Object, Properties, Relations], Objects),
-    select([Relation=>_], Relations, NewRelations),
-    select(class(Class, Father, Properties, Relations, Objects), KnowledgeBase, class(Class, Father, Properties, NewRelations, Objects), NewKnowledgeBase).
+    % Encontrar la clase que contiene el objeto
+    member(class(Class, Father, Properties, Relations, Objects), KnowledgeBase),
+    % Encontrar el objeto dentro de la lista de objetos de la clase
+    member([id=>Object, ObjProperties, ObjRelations], Objects),
+    % Eliminar la relación del objeto
+    select(Relation=>_, ObjRelations, UpdatedRelations),
+    % Actualizar la lista de objetos con las nuevas relaciones del objeto
+    select([id=>Object, ObjProperties, ObjRelations], Objects, [id=>Object, ObjProperties, UpdatedRelations], NewObjects),
+    % Actualizar la clase con la nueva lista de objetos
+    select(class(Class, Father, Properties, Relations, Objects), KnowledgeBase, class(Class, Father, Properties, Relations, NewObjects), NewKnowledgeBase).
 
 %% 4. Predicados para modificar
 
@@ -421,13 +422,13 @@ main :-
     delete_class_property(paphiopedilumdelenatii, altura, Update12, Update13),
     delete_object_property(rositafresita, rosas, color, Update13, Update14),
 
-    %delete_class_relation(ornitorrincos, comen, Update14, Update15),
-    %delete_object_relation(perry, rositafresita, comen, Update15, Update16),
+    delete_class_relation(ornitorrincos, comen, Update14, Update15),
+    delete_object_relation(perry, ornitorrincos, comen, Update15, Update16),
 
-    %delete_class(paphiopedilumdelenatii, Update16, Update17),
-    %delete_object(rositafresita, rosas, Update17, Update18),
+    delete_class(paphiopedilumdelenatii, Update16, Update17),
+    delete_object(rositafresita, rosas, Update17, Update18),
 
-    save_kb('KB.txt', Update14),
+    save_kb('KB.txt', Update18),
 
     %% Fin %%
 
