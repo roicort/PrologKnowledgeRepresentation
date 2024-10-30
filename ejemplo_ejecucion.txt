@@ -1,0 +1,110 @@
+?- open_kb('animales.txt',KB),class_extension(animales,KB,Extension_Class).
+
+Extension_Class = [nemo, pedro, arturo].
+
+-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+?- open_kb('animales.txt',KB),property_extension(vuelan,KB,Extension_Property).
+
+Extension_Property = [pedro:yes, arturo:no].
+
+-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+?- open_kb('animales.txt',KB),property_extension(tam,KB,Extension_Property).
+
+Extension_Property = [pedro:grande].
+
+-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+?- open_kb('animales.txt',KB),property_extension(nadan,KB,Extension_Property).
+
+Extension_Property = [nemo:yes, pedro:no, arturo:yes].
+
+-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+?- open_kb('animales.txt',KB),relation_extension(comen,KB,Extension_Relation).
+
+Extension_Relation = [pedro:[nemo]] .
+
+-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+?- open_kb('animales.txt',KB),relation_extension(amigo,KB,Extension_Relation).
+
+Extension_Relation = [arturo:[pedro]] .
+
+-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+?- open_kb('animales.txt',KB),relation_extension(not(amigo),KB,Extension_Relation).
+
+Extension_Relation = [pedro:[arturo]] .
+
+-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+?- open_kb('animales.txt',KB),classes_of_individual(arturo,KB,Classes_of).
+
+Classes_of = [pinguino, aves, animales, top].
+
+-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+?- open_kb('animales.txt',KB),properties_of_individual(arturo,KB,Properties_Of).
+
+Properties_Of = [listo, not(vuelan), nadan].
+
+-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+?- open_kb('animales.txt',KB),relations_of_individual(pedro,KB,Relations_Of).
+
+Relations_Of = [not(amigo=>[arturo]), comen=>[nemo]].
+
+-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+?- open_kb('animales.txt',KB),
+add_class(gatos,mamiferos,KB,KB1),
+add_class_property(gatos,leales,no,KB1,KB2),
+add_class_relation(gatos,comen,peces,KB2,KB3),
+save_kb('animales_1.txt',KB3).
+
+==> animales_1.png
+
+-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+?- open_kb('animales_1.txt',KB),
+add_object(perry,ornitorrincos,KB,KB1),
+add_object_property(perry,'agente_secreto',yes,KB1,KB2),
+add_object_relation(perry,not(amigo),pedro,KB2,KB3),
+save_kb('animales_2.txt',KB3).
+
+==> animales_2.png
+
+-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+?- open_kb('animales_2.txt',KB),
+rm_class(gatos,KB,KB1),
+rm_object(arturo,KB1,KB2),
+save_kb('animales_3.txt',KB2).
+
+==> animales_3.png
+
+-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+?- open_kb('animales_3.txt',KB),
+change_value_class_property(peces,bailan,yes,KB,KB1),
+change_object_name(nemo,doris,KB1,KB2),
+change_value_object_relation(perry,not(amigo),doris,KB2,KB3),
+save_kb('animales_4.txt',KB3).
+
+==> animales_4.png
+
+-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+?- open_kb('animales.txt',KB),class_property_value(peces,vuelan,KB,X).
+
+X = unknown.
+
+-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+?- open_kb('animales.txt',KB),object_property_value(pedro,bailan,KB,X).
+
+X = unknown.
+
+-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
