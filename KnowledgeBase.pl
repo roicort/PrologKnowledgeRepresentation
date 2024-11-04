@@ -15,6 +15,7 @@ class(_, _, _, _, _).
 % append: Sirve para concatenar listas.
 % select: Sirve para eliminar un elemento de una lista.
 % exclude: Sirve para eliminar elementos de una lista que cumplan una condición.
+% flatten: Sirve para aplanar una lista de listas.
 
 %% 0. Auxiliares
 
@@ -54,6 +55,66 @@ parentclasses_of(Subclass, KnowledgeBase, ParentClasses) :-
 objects_of_class(Class, KnowledgeBase, Objects) :-
     findall(Object, (member(class(Class, _, _, _, Objects), KnowledgeBase), member([id=>Object, _, _], Objects)), Objects).
 
+% D. Propiedades de una clase
+
+% Argumentos:
+    %Class: La clase de la cual queremos encontrar las propiedades.
+    %KnowledgeBase: La base de conocimiento que contiene las definiciones de clases.
+    %Properties: La lista resultante de todas las propiedades de Class.
+
+properties_of_class(Class, KnowledgeBase, Properties) :-
+    findall(Property, (member(class(Class, _, Properties, _, _), KnowledgeBase), member(Property, Properties)), Properties).
+
+% E. Clases con una propiedad
+
+% Argumentos:
+    %Property: La propiedad de la cual queremos encontrar las clases que la contienen.
+    %KnowledgeBase: La base de conocimiento que contiene las definiciones de clases.
+    %Classes: La lista resultante de todas las clases que contienen la propiedad Property.
+
+classes_with_property(Property, KnowledgeBase, AllClasses) :-
+    findall(Class, (
+        member(class(Class, _, Properties, _, _), KnowledgeBase),
+        member([Property, _], Properties)
+    ), Classes),
+    findall(Subclass, (member(Class, Classes), subclasses_of(Class, KnowledgeBase, Subclass)), Subclasses),
+    flatten([Classes | Subclasses], AllClasses).
+
+% Otros
+
+list_to_set([], []).
+list_to_set([H|T], Set) :- list_to_set(T, Set), member(H, Set).
+list_to_set([H|T], [H|Set]) :- list_to_set(T, Set), not(member(H, Set)).
+
+% Argumentos:
+    %Class: La clase de la cual queremos encontrar el valor de la propiedad.
+    %Property: La propiedad de la cual queremos encontrar el valor.
+    %KnowledgeBase: La base de conocimiento que contiene las definiciones de clases.
+    %Value: El valor de la propiedad Property en la clase Class.
+
+class_property_value(Class, Property, KnowledgeBase, Value) :-
+    member(class(Class, _, Properties, _, _), KnowledgeBase),
+    ( member(Property=>Value, Properties) ->
+        true;Value = 'Unknown'
+    ).
+
+% G. object_property_value
+
+% Argumentos:
+    %Object: El objeto del cual queremos encontrar el valor de la propiedad.
+    %Property: La propiedad de la cual queremos encontrar el valor.
+    %KnowledgeBase: La base de conocimiento que contiene las definiciones de clases.
+    %Value: El valor de la propiedad Property en el objeto Object.
+
+object_property_value(Object, Property, KnowledgeBase, Value) :-
+    member(class(_, _, _, _, Objects), KnowledgeBase),
+    member([id=>Object, ObjProperties, _], Objects),
+    ( member(Property=>Value, ObjProperties) ->
+        true
+    ; 
+        Value = unknown
+    ).
+
 %% 1. Predicados para Consultar
 
 % A. Extensión de una clase
@@ -70,7 +131,7 @@ class_extension(Class, KnowledgeBase, Extension) :-
     flatten([Class | Subclasses], AllClasses),
     findall(Object, (member(ClassName, AllClasses), objects_of_class(ClassName, KnowledgeBase, ClassObjects), member(Object, ClassObjects)), Extension).
 
-% B. Extensión de una propiedad (NO FUNCIONA)
+% B. Extensión de una propiedad
 
 %La  extensión  de  una  propiedad  (mostrar  todos  los  objetos  que  tienen  una  propiedad 
 %específica ya sea por declaración directa o por herencia, incluyendo su respectivo valor).  
@@ -79,14 +140,24 @@ class_extension(Class, KnowledgeBase, Extension) :-
 %el resultado de la extensión en una lista. 
 %Con output: [Objeto, Valor]. Ej. Extension_Property = [pedro:yes, arturo:no].
 
-property_extension(Property, KnowledgeBase, Extension) :-
-    findall(Object:Value, (
-        member(class(_, _, _, _, Objects), KnowledgeBase),
-        member([id=>Object, Properties, _], Objects),
-        member(Property=>Value, Properties)
-    ), Extension).
+% Argumentos:
+    %Property: La propiedad de la que se busca su extensión.
+    %KnowledgeBase: La base de conocimiento que contiene las definiciones de clases.
+    %ExtensionList: La lista resultante de la extensión de la propiedad Property.
 
-% C. Extensión de una relación (NO FUNCIONA)
+property_extension(Property, KnowledgeBase, ExtensionSet) :-
+    % Encontrar todas las clases que contienen la propiedad Property
+    classes_with_property(Property, KnowledgeBase, Classes),
+    % Encontrar todos los objetos que tienen la propiedad usando objects_of_class 
+    findall(Objects, (member(Class, Classes), objects_of_class(Class, KnowledgeBase, Objects)), ObjectsList),
+    % Aplanar la lista de listas de objetos
+    flatten(ObjectsList, Extension),
+    % Encontrar el valor de la propiedad para cada objeto
+    % Si el objeto tiene la propiedad, el value es el valor de la propiedad, si no, value es yes (porque la propiedad esta heredada)
+    findall(Object:Value, (member(Object, Extension), member(class(_, _, _, _, Objects), KnowledgeBase), member([id=>Object, Properties, _], Objects), (member(Property=>Value, Properties) ; Value = yes)), ExtensionList),
+    list_to_set(ExtensionList, ExtensionSet).
+
+% C. Extensión de una relación
 
 %La extensión de una relación (mostrar todos los objetos que tienen una relación específica 
 %ya  sea  por  declaración  directa  o  por  herencia,  incluyendo  todos  los  objetos  con  quién 
@@ -99,12 +170,21 @@ property_extension(Property, KnowledgeBase, Extension) :-
     %KnowledgeBase: La base de conocimiento que contiene las definiciones de clases.
     %Extension: La lista resultante de la extensión de la relación Relation.
 
-relation_extension(Relation, KnowledgeBase, Extension) :-
-    findall(Object->Relation->Target, (
-        member(class(_, _, _, _, Objects), KnowledgeBase),
-        member([id=>Object, _, Relations], Objects),
-        member(Relation=>Target, Relations)
-    ), Extension).
+    % Ejemplo: relation_extension(comen, KnowledgeBase, Extension).
+    % Extension = [pedro:[nemo]].
+
+relation_extension(Relation, KnowledgeBase, ExtensionSet) :-
+    % class exists
+    findall(Class, (member(class(Class, _, _, _, _), KnowledgeBase)), Classes),
+    % get subclasses
+    findall(Subclass, (member(Class, Classes), subclasses_of(Class, KnowledgeBase, Subclass)), Subclasses),
+    % flatten
+    flatten([Classes | Subclasses], AllClasses),
+    % get objects
+    findall(Object, (member(ClassName, AllClasses), objects_of_class(ClassName, KnowledgeBase, ClassObjects), member(Object, ClassObjects)), Objects),
+    % get relations
+    findall(Object=>Target, (member(Object, Objects), relations_of_individual(Object, KnowledgeBase, Relations), member(Relation=>Target, Relations)), Extension),
+    list_to_set(Extension, ExtensionSet).
 
 % D. Clases de un individuo
 % El conjunto de todas las clases a las que pertenece un objeto.
@@ -119,6 +199,55 @@ classes_of_individual(Individual, KnowledgeBase, Classes) :-
     %Encontrar las clases padre de las clases a las que pertenece Individual
     findall(ParentClass, (member(Class, DirectClasses), parentclasses_of(Class, KnowledgeBase, ParentClass)), ParentClasses),
     flatten([DirectClasses | ParentClasses], Classes).
+
+% E.  Todas las propiedades de un objeto o clase.
+
+%los predicados llevarán por nombre properties_of_individual y class_properties, respectivamente. 
+%Recibirá tres argumentos: (i) el nombre del objeto o clase, (ii) la base de conocimientos en cuestión, y (iii) el resultado 
+%en una lista con el valor de todas las propiedades del objeto o clase.
+
+% E1. Propiedades de un objeto
+
+% Argumentos:
+    %Individual: El objeto del cual queremos encontrar las propiedades.
+    %KnowledgeBase: La base de conocimiento que contiene las definiciones de clases.
+    %Properties: La lista resultante de todas las propiedades de Individual.
+
+properties_of_individual(Individual, KnowledgeBase, Properties) :-
+    findall(Property=>Value, (
+        member(class(_, _, _, _, Objects), KnowledgeBase),
+        member([id=>Individual, Properties, _], Objects),
+        member(Property=>Value, Properties)
+    ), Properties). 
+
+class_properties(Class, KnowledgeBase, ResultList) :-
+    properties_of_class(Class, KnowledgeBase, ResultList).
+
+% F. Todas las relaciones de un objeto o clase, los predicados llevarán por nombre relations_of_individual y class_relations.
+
+%Recibirá tres argumentos: (i) el nombre del objeto o clase, (ii) la base de conocimientos en cuestión, y (iii) el resultado en 
+%una lista con las relaciones del objeto/clase junto con los objetos/clases con quienes se guarda dicha relación.
+
+% F1. Relaciones de un objeto
+
+% Argumentos:
+    %Individual: El objeto del cual queremos encontrar las relaciones.
+    %KnowledgeBase: La base de conocimiento que contiene las definiciones de clases.
+    %Relations: La lista resultante de todas las relaciones de Individual.
+
+relations_of_individual(Individual, KnowledgeBase, Relations) :-    
+    findall(Relation=>Target, (
+        member(class(_, _, _, _, Objects), KnowledgeBase),
+        member([id=>Individual, _, Relations], Objects),
+        member(Relation=>Target, Relations)
+    ), Relations).
+
+% F2. Relaciones de una clase
+
+class_relations(Class, KnowledgeBase, ResultList) :-
+    findall(Relation, (member(class(Class, _, _, Relations, _), KnowledgeBase), member(Relation, Relations)), ResultList).
+
+% E2. Propiedades de una clase
 
 %% 2. Predicados para añadir 
 
@@ -159,10 +288,10 @@ add_class_property(Class, Property, Value, KnowledgeBase, NewKnowledgeBase) :-
 % B2. Añadir una propiedad a un objeto add_object_property
 
 add_object_property(Object, Property, Value, KnowledgeBase, NewKnowledgeBase) :-
-    member(class(Class, _, _, _, Objects), KnowledgeBase),
-    member([id=>Object, Properties, Relations], Objects),
-    not(member(Property=>Value, Properties)),
-    select([id=>Object, Properties, Relations], Objects, [id=>Object, [[Property=>Value] | Properties], Relations], NewObjects),
+    member(class(Class, Father, Properties, Relations, Objects), KnowledgeBase),
+    member([id=>Object, ObjProperties, ObjRelations], Objects),
+    not(member(Property=>Value, ObjProperties)),
+    select([id=>Object, ObjProperties, ObjRelations], Objects, [id=>Object, [[Property=>Value] | ObjProperties], ObjRelations], NewObjects),
     select(class(Class, Father, Properties, Relations, Objects), KnowledgeBase, class(Class, Father, Properties, Relations, NewObjects), NewKnowledgeBase).
 
 % C. Relaciones de clases u objetos cuyo nombre será add_class_relation y add_object_relation.
@@ -202,12 +331,20 @@ add_object_relation(Object, Relation, Target, KnowledgeBase, NewKnowledgeBase) :
 delete_class(Class, KnowledgeBase, NewKnowledgeBase) :-
     exclude([class(Class, _, _, _, _)]>>true, KnowledgeBase, NewKnowledgeBase).
 
+rm_class(Class, KnowledgeBase, NewKnowledgeBase) :-
+    delete_class(Class, KnowledgeBase, NewKnowledgeBase).
+
 % A2. Eliminar un objeto
 
 delete_object(Object, Class, KnowledgeBase, NewKnowledgeBase) :-
     member(class(Class, Father, Properties, Relations, Objects), KnowledgeBase),
     select([id=>Object, _, _], Objects, NewObjects),
     select(class(Class, Father, Properties, Relations, Objects), KnowledgeBase, class(Class, Father, Properties, Relations, NewObjects), NewKnowledgeBase).
+
+rm_object(Object, KnowledgeBase, NewKnowledgeBase) :-
+    member(class(ClassName, _, _, _, _), KnowledgeBase),
+    delete_object(Object, ClassName, KnowledgeBase, NewKnowledgeBase).
+
 
 % B. Propiedades específicas de clases u objetos cuyo nombre será rm_class_property y rm_object_property. 
 
@@ -373,9 +510,11 @@ main :-
     change_value_class_relation(ornitorrincos, comen, paphiopedilumdelenatii, Update10, Update11),
     change_value_object_relation(perry, comen, rositafresita, Update11, Update12),
 
+    add_object(planty, paphiopedilumdelenatii, Update12, Update13),
+
     %% Guardar base de conocimiento %%
 
-    save_kb('KB.txt', Update12),
+    save_kb('KB.txt', Update13),
     open_kb('KB.txt', KnowledgeBase2),
 
     %% Pruebas de predicados %%
@@ -403,6 +542,9 @@ main :-
     property_extension(nadan, KnowledgeBase2, Extension),
     format('Extension de la propiedad nadan: ~w~n', [Extension]),
 
+    property_extension(vuelan, KnowledgeBase2, VuelanExtension),
+    format('Extension de la propiedad vuelan: ~w~n', [VuelanExtension]),
+
     relation_extension(comen, KnowledgeBase2, Comen),
     format('Extension de la relación comen: ~w~n', [Comen]),
 
@@ -414,22 +556,26 @@ main :-
     format('Clases de Perry: ~w~n', [PerryClasses]),
     classes_of_individual(rositafresita, KnowledgeBase2, RositaClasses),
     format('Clases de Rosita Fresita: ~w~n', [RositaClasses]),
+    classes_of_individual(planty, KnowledgeBase2, PlantyClasses),
+    format('Clases de planty: ~w~n', [PlantyClasses]),
+
+    save_kb('KB-inter.txt', KnowledgeBase2),
 
     %% Pruebas eliminar %%
 
     write('Eliminando...'), nl,
 
-    delete_class_property(paphiopedilumdelenatii, altura, Update12, Update13),
-    delete_object_property(rositafresita, rosas, color, Update13, Update14),
+    delete_class_property(paphiopedilumdelenatii, altura, Update13, Update14),
+    delete_object_property(rositafresita, rosas, color, Update14, Update15),
 
-    delete_class_relation(ornitorrincos, comen, Update14, Update15),
-    delete_object_relation(perry, ornitorrincos, comen, Update15, Update16),
+    delete_class_relation(ornitorrincos, comen, Update15, Update16),
+    delete_object_relation(perry, ornitorrincos, comen, Update16, Update17),
 
-    delete_class(paphiopedilumdelenatii, Update16, Update17),
-    delete_object(rositafresita, rosas, Update17, Update18),
+    delete_class(paphiopedilumdelenatii, Update17, Update18),
+    delete_object(rositafresita, rosas, Update18, Update19),
 
-    save_kb('KB.txt', Update18),
+    save_kb('KB.txt', Update19),
 
-    %% Fin %%
+    write('Fin del programa.'),
 
     halt.

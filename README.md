@@ -17,17 +17,17 @@ This project provides a Prolog-based knowledge base management system. It allows
 
 ### Prolog Built-in Predicates
 
-- `findall/3`: Finds all solutions to a query.
-- `member/2`: Checks if an element is a member of a list.
-- `append/3`: Concatenates lists.
-- `select/3`: Removes an element from a list.
-- `exclude/3`: Removes elements from a list that satisfy a condition.
+- `findall`: Finds all solutions to a query.
+- `member`: Checks if an element is a member of a list.
+- `append`: Concatenates lists.
+- `select`: Removes an element from a list.
+- `exclude`: Removes elements from a list that satisfy a condition.
 
 ## Predicates
 
 ### Auxiliary Predicates
 
-#### `subclasses_of/3`
+#### `subclasses_of`
 
 Finds all subclasses of a given class.
 
@@ -36,7 +36,7 @@ Finds all subclasses of a given class.
     - `KnowledgeBase`: The knowledge base containing class definitions.
     - `Subclasses`: The resulting list of all subclasses of `Class`.
 
-#### `parentclasses_of/3`
+#### `parentclasses_of`
 
 Finds all parent classes of a given subclass recursively.
 
@@ -45,7 +45,7 @@ Finds all parent classes of a given subclass recursively.
     - `KnowledgeBase`: The knowledge base containing class definitions.
     - `ParentClasses`: The resulting list of all parent classes of `Subclass`.
 
-#### `objects_of_class/3`
+#### `objects_of_class`
 
 Finds all objects of a given class.
 
@@ -56,7 +56,7 @@ Finds all objects of a given class.
 
 ### Query Predicates
 
-#### `class_extension/3`
+#### `class_extension`
 
 Finds the extension of a class, including all objects belonging to the class and its subclasses.
 
@@ -65,7 +65,7 @@ Finds the extension of a class, including all objects belonging to the class and
     - `KnowledgeBase`: The knowledge base containing class definitions.
     - `Extension`: The resulting list of all objects in the class extension.
 
-#### `property_extension/3`
+#### `property_extension`
 
 Finds the extension of a property, showing all objects that have a specific property.
 
@@ -74,7 +74,7 @@ Finds the extension of a property, showing all objects that have a specific prop
     - `KnowledgeBase`: The knowledge base containing class definitions.
     - `Extension`: The resulting list of objects and their property values.
 
-#### `relation_extension/3`
+#### `relation_extension`
 
 Finds the extension of a relation, showing all objects that have a specific relation.
 
@@ -83,7 +83,7 @@ Finds the extension of a relation, showing all objects that have a specific rela
     - `KnowledgeBase`: The knowledge base containing class definitions.
     - `Extension`: The resulting list of objects and their related targets.
 
-#### `classes_of_individual/3`
+#### `classes_of_individual`
 
 Finds all classes to which an individual object belongs.
 
@@ -94,7 +94,7 @@ Finds all classes to which an individual object belongs.
 
 ### Addition Predicates
 
-#### `add_class/4`
+#### `add_class`
 
 Adds a new class to the knowledge base.
 
@@ -104,7 +104,7 @@ Adds a new class to the knowledge base.
     - `KnowledgeBase`: The current knowledge base.
     - `NewKnowledgeBase`: The updated knowledge base with the new class.
 
-#### `add_object/4`
+#### `add_object`
 
 Adds a new object to a class in the knowledge base.
 
@@ -114,7 +114,7 @@ Adds a new object to a class in the knowledge base.
     - `KnowledgeBase`: The current knowledge base.
     - `NewKnowledgeBase`: The updated knowledge base with the new object.
 
-#### `add_class_property/5`
+#### `add_class_property`
 
 Adds a property to a class.
 
@@ -125,7 +125,7 @@ Adds a property to a class.
     - `KnowledgeBase`: The current knowledge base.
     - `NewKnowledgeBase`: The updated knowledge base with the new property.
 
-#### `add_object_property/5`
+#### `add_object_property`
 
 Adds a property to an object.
 
@@ -136,7 +136,7 @@ Adds a property to an object.
     - `KnowledgeBase`: The current knowledge base.
     - `NewKnowledgeBase`: The updated knowledge base with the new property.
 
-#### `add_class_relation/5`
+#### `add_class_relation`
 
 Adds a relation to a class.
 
@@ -147,7 +147,7 @@ Adds a relation to a class.
     - `KnowledgeBase`: The current knowledge base.
     - `NewKnowledgeBase`: The updated knowledge base with the new relation.
 
-#### `add_object_relation/5`
+#### `add_object_relation`
 
 Adds a relation to an object.
 
@@ -160,7 +160,7 @@ Adds a relation to an object.
 
 ### Deletion Predicates
 
-#### `delete_class/3`
+#### `delete_class`
 
 Deletes a class from the knowledge base.
 
@@ -169,7 +169,7 @@ Deletes a class from the knowledge base.
     - `KnowledgeBase`: The current knowledge base.
     - `NewKnowledgeBase`: The updated knowledge base without the class.
 
-#### `delete_object/4`
+#### `delete_object`
 
 Deletes an object from a class in the knowledge base.
 
@@ -179,7 +179,7 @@ Deletes an object from a class in the knowledge base.
     - `KnowledgeBase`: The current knowledge base.
     - `NewKnowledgeBase`: The updated knowledge base without the object.
 
-#### `delete_class_property/4`
+#### `delete_class_property`
 
 Deletes a property from a class.
 
@@ -189,7 +189,7 @@ Deletes a property from a class.
     - `KnowledgeBase`: The current knowledge base.
     - `NewKnowledgeBase`: The updated knowledge base without the property.
 
-#### `delete_object_property/4`
+#### `delete_object_property`
 
 Deletes a property from an object.
 
@@ -200,7 +200,7 @@ Deletes a property from an object.
     - `KnowledgeBase`: The current knowledge base.
     - `NewKnowledgeBase`: The updated knowledge base without the property.
 
-#### `delete_class_relation/4`
+#### `delete_class_relation`
 
 Deletes a relation from a class.
 
@@ -210,7 +210,7 @@ Deletes a relation from a class.
     - `KnowledgeBase`: The current knowledge base.
     - `NewKnowledgeBase`: The updated knowledge base without the relation.
 
-#### `delete_object_relation/4`
+#### `delete_object_relation`
 
 Deletes a relation from an object.
 
@@ -223,7 +223,7 @@ Deletes a relation from an object.
 
 ### Modification Predicates
 
-#### `change_class_name/4`
+#### `change_class_name`
 
 Changes the name of a class.
 
@@ -233,7 +233,7 @@ Changes the name of a class.
     - `KnowledgeBase`: The current knowledge base.
     - `NewKnowledgeBase`: The updated knowledge base with the new class name.
 
-#### `change_object_name/4`
+#### `change_object_name`
 
 Changes the name of an object.
 
@@ -243,7 +243,7 @@ Changes the name of an object.
     - `KnowledgeBase`: The current knowledge base.
     - `NewKnowledgeBase`: The updated knowledge base with the new object name.
 
-#### `change_value_class_property/5`
+#### `change_value_class_property`
 
 Changes the value of a property of a class.
 
@@ -254,7 +254,7 @@ Changes the value of a property of a class.
     - `KnowledgeBase`: The current knowledge base.
     - `NewKnowledgeBase`: The updated knowledge base with the new property value.
 
-#### `change_value_object_property/5`
+#### `change_value_object_property`
 
 Changes the value of a property of an object.
 
@@ -265,7 +265,7 @@ Changes the value of a property of an object.
     - `KnowledgeBase`: The current knowledge base.
     - `NewKnowledgeBase`: The updated knowledge base with the new property value.
 
-#### `change_value_class_relation/5`
+#### `change_value_class_relation`
 
 Changes the target of a relation of a class.
 
@@ -276,7 +276,7 @@ Changes the target of a relation of a class.
     - `KnowledgeBase`: The current knowledge base.
     - `NewKnowledgeBase`: The updated knowledge base with the new relation target.
 
-#### `change_value_object_relation/5`
+#### `change_value_object_relation`
 
 Changes the target of a relation of an object.
 
@@ -303,3 +303,7 @@ The main predicate initializes the knowledge base, performs various operations (
     7. Perform deletion operations.
     8. Save the final knowledge base.
     9. Terminate the program.
+
+## Running the Program
+
+![](Example.png)
